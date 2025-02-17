@@ -83,9 +83,9 @@ void loop() {
 
   if (gSeqMetro.check() == 1) { // why only work inside u??
 
-    wTrig.trackPlayPoly(6);               // Play first note
-    wTrig.trackPlayPoly(7);               // Play second note
-    wTrig.trackPlayPoly(8);               // Play third note
+    wTrig.trackPlayPoly(6, true);               // Play first note
+    wTrig.trackPlayPoly(7, true);               // Play second note
+    wTrig.trackPlayPoly(8, true);               // Play third note
     
     delay(1000);
     wTrig.trackGain(6, -40);  // Mute Track 6
@@ -105,7 +105,7 @@ void loop() {
     delay(1000);
     wTrig.trackGain(8, 0); // Unmute track 8
 
-    delay(3000);
+    delay(10000);
     wTrig.stopAllTracks();
   }
 }
