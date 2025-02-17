@@ -55,6 +55,7 @@ void loop() {
     digitalWrite(LED, LOW);
   }
 
+  // // Successively mute and unmute
   // switch(state) {
   //   case -1:
   //     wTrig.masterGain(0);           
@@ -78,24 +79,33 @@ void loop() {
   //     break;
   // } 
   //state++ ;
-  
+  //delay(3000);
 
-  if (gSeqMetro.check() == 1) {
+  if (gSeqMetro.check() == 1) { // why only work inside u??
 
-    // turn LED on off
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(100);
-    digitalWrite(LED_BUILTIN, LOW);
-
-    wTrig.masterGain(-8);                 // Lower main volume
     wTrig.trackPlayPoly(6);               // Play first note
-    delay(1000);
     wTrig.trackPlayPoly(7);               // Play second note
-    delay(1000);
     wTrig.trackPlayPoly(8);               // Play third note
+    
     delay(1000);
-    wTrig.trackFade(6, -50, 5000, 1);     // Fade Track 6 to -50dB and stop
-    wTrig.trackFade(7, -50, 5000, 1);     // Fade Track 7 to -50dB and stop
-    wTrig.trackFade(8, -50, 5000, 1);     // Fade Track 8 to -50dB and stop
+    wTrig.trackGain(6, -40);  // Mute Track 6
+
+    delay(1000);
+    wTrig.trackGain(7, -40);  // Mute Track 7
+
+    delay(1000);
+    wTrig.trackGain(8, -40);  // Mute Track 8
+
+    delay(1000);
+    wTrig.trackGain(6, 0); // Unmute track 6
+    
+    delay(1000);
+    wTrig.trackGain(7, 0); // Unmute track 7
+    
+    delay(1000);
+    wTrig.trackGain(8, 0); // Unmute track 8
+
+    delay(3000);
+    wTrig.stopAllTracks();
   }
 }
