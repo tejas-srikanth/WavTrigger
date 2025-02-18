@@ -14,6 +14,10 @@ int  gSeqState = 0;           // Main program sequencer state
 int  gRateOffset = 0;         // WAV Trigger sample-rate offset
 int state = -1;
 
+const int track1 = 6;
+const int track2 = 7;
+const int track3 = 8;
+
 const int button1 = 6;  // Button #1 connected to digital pin 6
 const int button2 = 5;  // Button #2 connected to digital pin 5
 const int button3 = 4;  // Button #3 connected to digital pin 4
@@ -55,57 +59,44 @@ void loop() {
     digitalWrite(LED, LOW);
   }
 
-  // // Successively mute and unmute
-  // switch(state) {
-  //   case -1:
-  //     wTrig.masterGain(0);           
-  //     wTrig.trackPlayPoly(6, true);  // Loop Track 6
-  //     wTrig.trackPlayPoly(7, true);  // Loop Track 7
-  //     wTrig.trackPlayPoly(8, true);  // Loop Track 8 
-  //   case 0:
-  //     wTrig.trackGain(6, -40);  // Mute Track 6
-  //     break;
-  //   case 1:
-  //     wTrig.trackGain(7, -40);  // Mute Track 7
-  //     break;
-  //   case 2:
-  //     wTrig.trackGain(8, -40); // Mute Track 8
-  //     break;
-  //   case 3:
-  //     wTrig.trackGain(6, 0); // Unmute track 6
-  //     wTrig.trackGain(7, 0); // Unmute track 7
-  //     wTrig.trackGain(8, 0); // Unmute track 8
-  //     state = -1;
-  //     break;
-  // } 
-  //state++ ;
-  //delay(3000);
+  // Successively mute and unmute
 
-  if (gSeqMetro.check() == 1) { // why only work inside u??
+  if (gSeqMetro.check() == 1) { // switches state every 6 s
+   
+    switch(state) {
+      case -1:
+        wTrig.masterGain(0);           
+        
+        wTrig.trackPlayPoly(track1);  // Loop Track 6
+        wTrig.trackLoop(track1, 1);
+        
+        wTrig.trackPlayPoly(track2);  // Loop Track 7
+        wTrig.trackLoop(track2, 2);
+        
+        wTrig.trackPlayPoly(track3);  // Loop Track 8 
+        wTrig.trackLoop(track3, 1);
+        
+        state = 0; // update state
+        break;
 
-    wTrig.trackPlayPoly(6, true);               // Play first note
-    wTrig.trackPlayPoly(7, true);               // Play second note
-    wTrig.trackPlayPoly(8, true);               // Play third note
-    
-    delay(1000);
-    wTrig.trackGain(6, -40);  // Mute Track 6
-
-    delay(1000);
-    wTrig.trackGain(7, -40);  // Mute Track 7
-
-    delay(1000);
-    wTrig.trackGain(8, -40);  // Mute Track 8
-
-    delay(1000);
-    wTrig.trackGain(6, 0); // Unmute track 6
-    
-    delay(1000);
-    wTrig.trackGain(7, 0); // Unmute track 7
-    
-    delay(1000);
-    wTrig.trackGain(8, 0); // Unmute track 8
-
-    delay(10000);
-    wTrig.stopAllTracks();
-  }
+      case 0:
+        wTrig.trackGain(track1, -40);  // Mute Track 6
+        state = 1; // update state
+        break;
+      case 1:
+        wTrig.trackGain(track2, -40);  // Mute Track 7
+        state = 2; // update state
+        break;
+      case 2:
+        wTrig.trackGain(track3, -40); // Mute Track 8
+        state = 3; // update state
+        break;
+      case 3:
+        wTrig.trackGain(track1, 0); // Unmute track 6
+        wTrig.trackGain(track2, 0); // Unmute track 7
+        wTrig.trackGain(track3, 0); // Unmute track 8
+        state = 0; // update state
+        break;
+    }
+  } 
 }
