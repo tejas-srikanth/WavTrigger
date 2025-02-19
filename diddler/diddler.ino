@@ -2,7 +2,9 @@
 #include <AltSoftSerial.h>
 #include <wavTrigger.h>
 
-const int interval = 6000;
+const int interval = 1000;
+const int muteVol = -70;
+const int unmuteVol = 0;
 
 Metro gSeqMetro(interval);        // Sequencer state machine interval timer
 #define LED 13                // our LED
@@ -13,16 +15,24 @@ byte gLedState = 0;
 int  gSeqState = 0;           // Main program sequencer state
 int  gRateOffset = 0;         // WAV Trigger sample-rate offset
 int state = -1;
+int currState = -1;
 
-const int track1 = 6;
-const int track2 = 7;
-const int track3 = 8;
+
+const int track1 = 35;
+const int track2 = 36;
+const int track3 = 37;
+const int track4 = 38;
+const int track5 = 39;
+
+const int tracks[] = {track1, track2, track3, track4, track5};
 
 const int button1 = 6;  // Button #1 connected to digital pin 6
 const int button2 = 5;  // Button #2 connected to digital pin 5
 const int button3 = 4;  // Button #3 connected to digital pin 4
 const int button4 = 3;  // Button #4 connected to digital pin 3
 const int button5 = 2;  // Button #5 connected to digital pin 2
+
+const int buttons[] = {button1, button2, button3, button4, button5};
 
 wavTrigger wTrig;
 
@@ -47,56 +57,55 @@ void setup() {
 
 void loop() {
 
-  bool b1 = digitalRead(button1) == LOW;
-  bool b2 = digitalRead(button2) == LOW;
-  bool b3 = digitalRead(button3) == LOW;
-  bool b4 = digitalRead(button4) == LOW;
-  bool b5 = digitalRead(button5) == LOW;
-  
-  if (b1 || b2 || b3 || b4 || b5) { // dem buttons don't work tho
-    digitalWrite(LED, HIGH);
-  } else {
-    digitalWrite(LED, LOW);
-  }
-
   // Successively mute and unmute
 
-  if (gSeqMetro.check() == 1) { // switches state every 6 s
-   
-    switch(state) {
-      case -1:
-        wTrig.masterGain(0);           
-        
-        wTrig.trackPlayPoly(track1);  // Loop Track 6
-        wTrig.trackLoop(track1, 1);
-        
-        wTrig.trackPlayPoly(track2);  // Loop Track 7
-        wTrig.trackLoop(track2, 2);
-        
-        wTrig.trackPlayPoly(track3);  // Loop Track 8 
-        wTrig.trackLoop(track3, 1);
-        
-        state = 0; // update state
-        break;
+  //if (gSeqMetro.check() == 1) { // switches state every 6 s
 
-      case 0:
-        wTrig.trackGain(track1, -40);  // Mute Track 6
-        state = 1; // update state
-        break;
-      case 1:
-        wTrig.trackGain(track2, -40);  // Mute Track 7
-        state = 2; // update state
-        break;
-      case 2:
-        wTrig.trackGain(track3, -40); // Mute Track 8
-        state = 3; // update state
-        break;
-      case 3:
-        wTrig.trackGain(track1, 0); // Unmute track 6
-        wTrig.trackGain(track2, 0); // Unmute track 7
-        wTrig.trackGain(track3, 0); // Unmute track 8
-        state = 0; // update state
-        break;
+    // currState is a 3-bit integer
+    // the ith bit from the right represents
+    // whether the corresponding track is turned on
+    // EX: currState=6=(110)b
+    // track1 is off (last bit is 0)
+    // track2 is on (2nd last bit is 1)
+    // track3 is on (3rd last bit is 1)
+  switch(currState){
+
+    // entry state for state machine
+    case -1: {
+      Serial.println(currState);
+      wTrig.masterGain(0);
+      // play all tracks initially
+      for (int i = 0; i < 5; ++i){
+        wTrig.trackPlayPoly(tracks[i]);
+        wTrig.trackLoop(tracks[i], 1);
+        wTrig.trackGain(tracks[i], muteVol);
+      }
+      // begin the main loop
+      currState = 0;
+      break;
+    }
+
+    // main loop
+    default: {
+      for (int i = 0; i < 5; ++i){
+        int currButtonStatus = digitalRead(buttons[i]); // can use rand() % 2 to simulate button press
+        int currBitValue = currState & (1 << i); // gets the ith bit from the right
+
+        // we check if user has just pressed the button
+        if (currButtonStatus && !currBitValue){
+          wTrig.trackGain(tracks[i], unmuteVol); // play track
+          currState ^= (1 << i); // toggle ith bit from right
+        } 
+        
+        // check if user has just let go of the button
+        else if (!currButtonStatus && currBitValue){
+          wTrig.trackGain(tracks[i], muteVol); // mute track
+          currState ^= (1 << i); // toggle ith bit from right
+        }
+      } 
+      Serial.println(currState, BIN);
+      break;
     }
   } 
+  //}
 }
