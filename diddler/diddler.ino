@@ -1,4 +1,3 @@
-#include <Metro.h>
 #include <AltSoftSerial.h>
 #include <wavTrigger.h>
 
@@ -6,10 +5,7 @@ const int interval = 1000;
 const int muteVol = -70;
 const int unmuteVol = 0;
 
-Metro gSeqMetro(interval);        // Sequencer state machine interval timer
 #define LED 13                // our LED
-
-Metro gLedMetro(500);         // LED blink interval timer
 
 byte gLedState = 0;  
 int  gSeqState = 0;           // Main program sequencer state
@@ -57,10 +53,6 @@ void setup() {
 
 void loop() {
 
-  // Successively mute and unmute
-
-  //if (gSeqMetro.check() == 1) { // switches state every 6 s
-
     // currState is a 3-bit integer
     // the ith bit from the right represents
     // whether the corresponding track is turned on
@@ -107,5 +99,4 @@ void loop() {
       break;
     }
   } 
-  //}
 }
